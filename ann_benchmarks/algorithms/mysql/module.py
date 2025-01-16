@@ -46,12 +46,10 @@ class MySQL(BaseANN):
             data.append(i)
             data.append(blob)
             if len(data) == 2*BATCH_SIZE:
-                print(f"Insert batch of {len(data)//2}")
                 stmt = "INSERT INTO items(id, embedding) VALUES " + ",".join(['(%s,CAST(%s AS CHAR CHARACTER SET BINARY))'] * BATCH_SIZE)
                 cursor.execute(stmt, tuple(data))
                 data = []
         if len(data) > 0:
-            print(f"Insert batch of {len(data)//2}")
             stmt = "INSERT INTO items(id, embedding) VALUES " + ",".join(['(%s,CAST(%s AS CHAR CHARACTER SET BINARY))'] * (len(data)//2))
             cursor.execute(stmt, tuple(data))
             data = []
