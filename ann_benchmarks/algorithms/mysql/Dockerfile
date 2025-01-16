@@ -18,6 +18,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
       lsb-release \
       perl \
       pkg-config \
+      python3-mysql.connector \
       tzdata \
       unzip \
       valgrind \
@@ -43,8 +44,7 @@ RUN cmake \
   -DDOWNLOAD_BOOST=1 \
   -DBUILD_CONFIG=mysql_release \
   -DCMAKE_INSTALL_PREFIX=/usr \
-  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-  -DMINIMAL_RELWITHDEBINFO=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
   -DSYSCONFDIR=/etc/mysql \
   -DMYSQL_UNIX_ADDR=/var/run/mysqld/mysqld.sock \
   -DWITH_MECAB= \
@@ -72,14 +72,11 @@ RUN cmake \
   -DWITH_UNIT_TESTS=OFF \
   ..
 
-RUN cat /proc/meminfo
-RUN du -mc . | sort -n
 RUN make -j8
 
 USER root
 RUN mkdir -p /var/lib/mysql /var/run/mysqld /var/lib/mysql-files
 RUN chown 1234 -R /var/lib/mysql /var/run/mysqld /var/lib/mysql-files
-RUN apt-get install -y python3-mysql.connector
 
 USER bob
 RUN /src/build/runtime_output_directory/mysqld --initialize-insecure
