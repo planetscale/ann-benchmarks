@@ -7,6 +7,7 @@ from mysql.connector import Error
 
 from ..base.module import BaseANN
 
+BATCH_SIZE=128
 
 class MySQL(BaseANN):
     def __init__(self, metric, method_param):
@@ -28,11 +29,24 @@ class MySQL(BaseANN):
         cursor.execute("USE ann")
         cursor.execute("DROP TABLE IF EXISTS items")
         cursor.execute("CREATE TABLE items (id INT PRIMARY KEY NOT NULL, embedding VECTOR(%d))" % X.shape[1])
+
         print("copying data...")
-        # TODO: batching
+        data = []
         for i, embedding in enumerate(X):
             blob = struct.pack(f'{len(embedding)}f', *embedding)
-            cursor.execute("INSERT INTO items(id, embedding) VALUES (%s,CAST(%s AS CHAR CHARACTER SET BINARY))", (i, blob))
+            data.append(i)
+            data.append(blob)
+            if len(data) == 2*BATCH_SIZE:
+                print(f"Insert batch of {len(data)//2}")
+                stmt = "INSERT INTO items(id, embedding) VALUES " + ",".join(['(%s,CAST(%s AS CHAR CHARACTER SET BINARY))'] * BATCH_SIZE)
+                cursor.execute(stmt, tuple(data))
+                data = []
+        if len(data) > 0:
+            print(f"Insert batch of {len(data)//2}")
+            stmt = "INSERT INTO items(id, embedding) VALUES " + ",".join(['(%s,CAST(%s AS CHAR CHARACTER SET BINARY))'] * (len(data)//2))
+            cursor.execute(stmt, tuple(data))
+            data = []
+
         print("creating index...")
         if self._metric == "angular":
             cursor.execute("ALTER TABLE items ADD VECTOR INDEX(embedding) SECONDARY_ENGINE_ATTRIBUTE='{\"type\":\"spann\", \"distance\":\"cosine\"}'")
