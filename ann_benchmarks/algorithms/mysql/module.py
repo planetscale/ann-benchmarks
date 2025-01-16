@@ -22,6 +22,15 @@ class MySQL(BaseANN):
         else:
             raise RuntimeError(f"unknown metric {metric}")
 
+        if 'fq' in method_param:
+            fq = method_param['fq']
+            self._quant = f', "fixed_quantization":"{fq}"'
+        elif 'pq' in method_param:
+            pq = method_param['pq']
+            self._quant = f', "product_quantization":{{"dimensions":{pq}}}'
+        else:
+            self._quant = ""
+
     def fit(self, X):
         connection = mysql.connector.connect(user='root', password='')
         cursor = connection.cursor()
@@ -33,6 +42,8 @@ class MySQL(BaseANN):
         print("copying data...")
         data = []
         for i, embedding in enumerate(X):
+            if i >= 1000:
+                break
             blob = struct.pack(f'{len(embedding)}f', *embedding)
             data.append(i)
             data.append(blob)
@@ -47,13 +58,14 @@ class MySQL(BaseANN):
             cursor.execute(stmt, tuple(data))
             data = []
 
-        print("creating index...")
         if self._metric == "angular":
-            cursor.execute("ALTER TABLE items ADD VECTOR INDEX(embedding) SECONDARY_ENGINE_ATTRIBUTE='{\"type\":\"spann\", \"distance\":\"cosine\"}'")
+            stmt = "ALTER TABLE items ADD VECTOR INDEX(embedding) SECONDARY_ENGINE_ATTRIBUTE='{\"type\":\"spann\", \"distance\":\"cosine\"" + self._quant + "}'"
         elif self._metric == "euclidean":
-            cursor.execute("ALTER TABLE items ADD VECTOR INDEX(embedding) SECONDARY_ENGINE_ATTRIBUTE='{\"type\":\"spann\", \"distance\":\"l2\"}'")
+            stmt = "ALTER TABLE items ADD VECTOR INDEX(embedding) SECONDARY_ENGINE_ATTRIBUTE='{\"type\":\"spann\", \"distance\":\"l2\"" + self._quant + "}'"
         else:
             raise RuntimeError(f"unknown metric {self._metric}")
+        print(f"creating index: {stmt}")
+        cursor.execute(stmt)
         print("done!")
         self._connection = connection
         self._cursor = cursor
