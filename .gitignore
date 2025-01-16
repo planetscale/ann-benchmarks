@@ -17,3 +17,4 @@ results/*
 venv
 
 .idea
+ann_benchmarks/algorithms/mysql/mysql-src

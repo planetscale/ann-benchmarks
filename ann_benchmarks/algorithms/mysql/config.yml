@@ -1,0 +1,17 @@
+float:
+  any:
+  - base_args: ['@metric']
+    constructor: MySQL
+    disabled: false
+    docker_tag: ann-benchmarks-mysql
+    module: ann_benchmarks.algorithms.mysql
+    name: mysql
+    run_groups:
+      M-16:
+        arg_groups: [{}]
+        args: {}
+        query_args: [[1]]
+      M-24:
+        arg_groups: [{}]
+        args: {}
+        query_args: [[1]]
