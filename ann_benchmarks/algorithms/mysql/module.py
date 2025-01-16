@@ -16,9 +16,9 @@ class MySQL(BaseANN):
         self._cursor = None
 
         if metric == "angular":
-            self._query = "SELECT id FROM items ORDER BY DISTANCE(embedding,CAST(%s AS CHAR CHARACTER SET BINARY),'COSINE') LIMIT %s"
+            self._query = "SELECT id,DISTANCE(embedding,CAST(%s AS CHAR CHARACTER SET BINARY),'COSINE') AS d FROM items ORDER BY d LIMIT %s"
         elif metric == "euclidean":
-            self._query = "SELECT id FROM items ORDER BY DISTANCE(embedding,CAST(%s AS CHAR CHARACTER SET BINARY),'L2') LIMIT %s"
+            self._query = "SELECT id,DISTANCE(embedding,CAST(%s AS CHAR CHARACTER SET BINARY),'L2') AS d FROM items ORDER BY d LIMIT %s"
         else:
             raise RuntimeError(f"unknown metric {metric}")
 
@@ -42,8 +42,6 @@ class MySQL(BaseANN):
         print("copying data...")
         data = []
         for i, embedding in enumerate(X):
-            if i >= 1000:
-                break
             blob = struct.pack(f'{len(embedding)}f', *embedding)
             data.append(i)
             data.append(blob)
@@ -72,12 +70,18 @@ class MySQL(BaseANN):
 
     def set_query_arguments(self, oversample):
         self._oversample = oversample
+        print(f"Oversampling: {oversample}")
 
     def query(self, v, n):
-        # TODO: oversampling
         blob = struct.pack(f'{len(v)}f', *v)
-        self._cursor.execute(self._query, (blob, n))
-        return [id for id, in self._cursor.fetchall()]
+        if self._oversample > 1:
+            stmt = f'SELECT * FROM ({self._query}) ttt ORDER BY d LIMIT %s;'
+            data = (blob, int(n*self._oversample), n)
+        else:
+            stmt = self._query
+            data = (blob, n)
+        self._cursor.execute(stmt, data)
+        return [row[0] for row in self._cursor.fetchall()]
 
     def get_memory_usage(self):
         if self._cursor is None:
@@ -99,8 +103,6 @@ class MySQL(BaseANN):
                   OR its.name LIKE CONCAT(database(), '/vec_%')
                 GROUP BY it.name""")
         size_in_bytes = self._cursor.fetchone()[1]
-        print(size_in_bytes)
-        print(type(size_in_bytes))
         return int(size_in_bytes) / 1024
 
     def __str__(self):
