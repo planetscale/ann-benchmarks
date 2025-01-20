@@ -25,11 +25,14 @@ class MySQL(BaseANN):
         if 'fq' in method_param:
             fq = method_param['fq']
             self._quant = f', "fixed_quantization":"{fq}"'
+            self._quant_desc = "fq=#{fq}"
         elif 'pq' in method_param:
             pq = method_param['pq']
             self._quant = f', "product_quantization":{{"dimensions":{pq}}}'
+            self._quant_desc = "pq=#{pq}"
         else:
             self._quant = ""
+            self._quant_desc = "nq"
 
     def fit(self, X):
         connection = mysql.connector.connect(user='root', password='')
@@ -104,4 +107,4 @@ class MySQL(BaseANN):
         return int(size_in_bytes) / 1024
 
     def __str__(self):
-        return f"MySQL(oversample={self._oversample})"
+        return f"MySQL(oversample={self._oversample},{self._quant_desc})"
