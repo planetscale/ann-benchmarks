@@ -5,29 +5,64 @@ float:
     disabled: false
     docker_tag: ann-benchmarks-mysql
     module: ann_benchmarks.algorithms.mysql
-    name: mysql
+    name: mysql-nq
     run_groups:
-      NQ:
+      base:
         arg_groups: [{}]
         args: {}
-        query_args: [[1]]
-      PQ-49:
+        query_args: [[1], [32, 64, 128, 256, 512, 1024, 2048, 4096]]
+  - base_args: ['@metric']
+    constructor: MySQL
+    disabled: false
+    docker_tag: ann-benchmarks-mysql
+    module: ann_benchmarks.algorithms.mysql
+    name: mysql-pq49
+    run_groups:
+      base:
         arg_groups: [{pq: 49}]
         args: {}
-        query_args: [[1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30]]
-      PQ-98:
+        query_args: [[1, 2, 4, 8, 16, 32], [32, 64, 128, 256, 512]]
+  - base_args: ['@metric']
+    constructor: MySQL
+    disabled: false
+    docker_tag: ann-benchmarks-mysql
+    module: ann_benchmarks.algorithms.mysql
+    name: mysql-pq98
+    run_groups:
+      base:
         arg_groups: [{pq: 98}]
         args: {}
-        query_args: [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]]
-      PQ-196:
+        query_args: [[1, 2, 4, 8], [32, 64, 128, 256, 512]]
+  - base_args: ['@metric']
+    constructor: MySQL
+    disabled: false
+    docker_tag: ann-benchmarks-mysql
+    module: ann_benchmarks.algorithms.mysql
+    name: mysql-pq196
+    run_groups:
+      base:
         arg_groups: [{pq: 196}]
         args: {}
-        query_args: [[1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0]]
-      FQ-float16:
+        query_args: [[1.0, 1.5, 2.0, 2.5, 3.0], [32, 64, 128, 256, 512]]
+  - base_args: ['@metric']
+    constructor: MySQL
+    disabled: false
+    docker_tag: ann-benchmarks-mysql
+    module: ann_benchmarks.algorithms.mysql
+    name: mysql-fq-float16
+    run_groups:
+      base:
         arg_groups: [{fq: "float16"}]
         args: {}
-        query_args: [[1]]
-      FQ-onebit:
+        query_args: [[1], [32, 64, 128, 256, 512]]
+  - base_args: ['@metric']
+    constructor: MySQL
+    disabled: false
+    docker_tag: ann-benchmarks-mysql
+    module: ann_benchmarks.algorithms.mysql
+    name: mysql-fq-onebit
+    run_groups:
+      base:
         arg_groups: [{fq: "onebit"}]
         args: {}
-        query_args: [[1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30]]
+        query_args: [[1, 2, 4, 8, 16, 32], [32, 64, 128, 256, 512]]

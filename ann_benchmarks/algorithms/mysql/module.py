@@ -16,9 +16,9 @@ class MySQL(BaseANN):
         self._cursor = None
 
         if metric == "angular":
-            self._query = "SELECT id,DISTANCE(embedding,CAST(%s AS CHAR CHARACTER SET BINARY),'COSINE') AS d FROM items ORDER BY d LIMIT %s"
+            self._query = "SELECT /*+ SET_VAR(vectors_search_head_batch_size=%s) */ id,DISTANCE(embedding,CAST(%s AS CHAR CHARACTER SET BINARY),'COSINE') AS d FROM items ORDER BY d LIMIT %s"
         elif metric == "euclidean":
-            self._query = "SELECT id,DISTANCE(embedding,CAST(%s AS CHAR CHARACTER SET BINARY),'L2') AS d FROM items ORDER BY d LIMIT %s"
+            self._query = "SELECT /*+ SET_VAR(vectors_search_head_batch_size=%s) */ id,DISTANCE(embedding,CAST(%s AS CHAR CHARACTER SET BINARY),'L2') AS d FROM items ORDER BY d LIMIT %s"
         else:
             raise RuntimeError(f"unknown metric {metric}")
 
@@ -69,18 +69,20 @@ class MySQL(BaseANN):
         self._connection = connection
         self._cursor = cursor
 
-    def set_query_arguments(self, oversample):
+    def set_query_arguments(self, oversample, search_head_batch_size):
         self._oversample = oversample
-        print(f"Oversampling: {oversample}")
+        self._search_head_batch_size = search_head_batch_size
+        self._cursor.execute("SET @@vectors_search_head_batch_size = %d" % search_head_batch_size)
+        print(f"Query args: oversample={oversample}, search_head_batch_size={search_head_batch_size}")
 
     def query(self, v, n):
         blob = struct.pack(f'{len(v)}f', *v)
         if self._oversample > 1:
             stmt = f'SELECT * FROM ({self._query}) ttt ORDER BY d LIMIT %s;'
-            data = (blob, int(n*self._oversample), n)
+            data = (self._search_head_batch_size, blob, int(n*self._oversample), n)
         else:
             stmt = self._query
-            data = (blob, n)
+            data = (self._search_head_batch_size, blob, n)
         self._cursor.execute(stmt, data)
         return [row[0] for row in self._cursor.fetchall()]
 
@@ -107,4 +109,4 @@ class MySQL(BaseANN):
         return int(size_in_bytes) / 1024
 
     def __str__(self):
-        return f"MySQL(oversample={self._oversample},{self._quant_desc})"
+        return f"MySQL({self._quant_desc},oversample={self._oversample},search_head_batch_size={self._search_head_batch_size})"
