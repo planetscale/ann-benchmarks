@@ -3,6 +3,7 @@
 FROM ann-benchmarks
 
 RUN git clone --recursive https://github.com/microsoft/SPTAG
+RUN cd SPTAG && git checkout 1f6a85ea68f621df7283ac4d25a61e66084104c7
 RUN apt-get update && apt-get -y install wget build-essential cmake libboost-all-dev libtbb-dev software-properties-common swig
 
 # Patch https://github.com/microsoft/SPTAG/issues/243
