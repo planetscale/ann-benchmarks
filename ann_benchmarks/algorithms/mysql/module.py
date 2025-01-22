@@ -25,11 +25,11 @@ class MySQL(BaseANN):
         if 'fq' in method_param:
             fq = method_param['fq']
             self._quant = f', "fixed_quantization":"{fq}"'
-            self._quant_desc = "fq=#{fq}"
+            self._quant_desc = f'fq={fq}'
         elif 'pq' in method_param:
             pq = method_param['pq']
             self._quant = f', "product_quantization":{{"dimensions":{pq}}}'
-            self._quant_desc = "pq=#{pq}"
+            self._quant_desc = f'pq={pq}'
         else:
             self._quant = ""
             self._quant_desc = "nq"
