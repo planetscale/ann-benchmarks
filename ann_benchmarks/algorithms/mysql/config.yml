@@ -10,7 +10,7 @@ float:
       base:
         arg_groups: [{}]
         args: {}
-        query_args: [[1], [32, 64, 128, 256, 512, 1024, 2048, 4096]]
+        query_args: [[1], [16, 32, 64, 128, 256, 512, 1024, 2048, 4096]]
   - base_args: ['@metric']
     constructor: MySQL
     disabled: false
@@ -21,7 +21,7 @@ float:
       base:
         arg_groups: [{pq: 49}]
         args: {}
-        query_args: [[1, 2, 4, 8, 16, 32], [32, 64, 128, 256, 512]]
+        query_args: [[1, 2, 4, 8, 16, 32], [16, 32, 64, 128, 256]]
   - base_args: ['@metric']
     constructor: MySQL
     disabled: false
@@ -32,7 +32,7 @@ float:
       base:
         arg_groups: [{pq: 98}]
         args: {}
-        query_args: [[1, 2, 4, 8], [32, 64, 128, 256, 512]]
+        query_args: [[1, 2, 4, 8], [16, 32, 64, 128, 256]]
   - base_args: ['@metric']
     constructor: MySQL
     disabled: false
@@ -43,7 +43,7 @@ float:
       base:
         arg_groups: [{pq: 196}]
         args: {}
-        query_args: [[1.0, 1.5, 2.0, 2.5, 3.0], [32, 64, 128, 256, 512]]
+        query_args: [[1.0, 1.5, 2.0, 2.5, 3.0], [16, 32, 64, 128, 256]]
   - base_args: ['@metric']
     constructor: MySQL
     disabled: false
@@ -54,7 +54,7 @@ float:
       base:
         arg_groups: [{fq: "float16"}]
         args: {}
-        query_args: [[1], [32, 64, 128, 256, 512]]
+        query_args: [[1], [16, 32, 64, 128, 256, 512, 1024, 2048, 4096]]
   - base_args: ['@metric']
     constructor: MySQL
     disabled: false
@@ -65,4 +65,4 @@ float:
       base:
         arg_groups: [{fq: "onebit"}]
         args: {}
-        query_args: [[1, 2, 4, 8, 16, 32], [32, 64, 128, 256, 512]]
+        query_args: [[1, 2, 4, 8, 16, 32], [16, 32, 64, 128, 256]]
