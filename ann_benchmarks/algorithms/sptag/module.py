@@ -35,13 +35,17 @@ class Sptag(BaseANN):
 
         self._sptag.Build(X, X.shape[0], False)
 
-    def set_query_arguments(self, MaxCheck):
+    def set_query_arguments(self, MaxCheck, InternalResultNum, SearchInternalResultNum):
         self._maxCheck = MaxCheck
+        self._internalResultNum = InternalResultNum
+        self._searchInternalResultNum = SearchInternalResultNum
         self._sptag.SetSearchParam("MaxCheck", str(self._maxCheck), "BuildHead")
         self._sptag.SetSearchParam("MaxCheck", str(self._maxCheck), "BuildSSDIndex")
+        self._sptag.SetSearchParam("InternalResultNum", str(self._internalResultNum), "BuildSSDIndex")
+        self._sptag.SetSearchParam("SearchInternalResultNum", str(self._searchInternalResultNum), "BuildSSDIndex")
 
     def query(self, v, k):
         return self._sptag.Search(v, k)[0]
 
     def __str__(self):
-        return "Sptag(metric=%s, selectHead=%s, check=%d)" % (self._metric, self._selectHead, self._maxCheck)
+        return "Sptag(metric=%s, selectHead=%s, check=%d, InternalResultNum=%d, SearchInternalResultNum=%d)" % (self._metric, self._selectHead, self._maxCheck, self._internalResultNum, self._searchInternalResultNum)
