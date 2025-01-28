@@ -36,6 +36,8 @@ class MySQL(BaseANN):
 
     def fit(self, X):
         connection = mysql.connector.connect(user='root', password='')
+        connection.autocommit = True
+        assert connection.autocommit
         cursor = connection.cursor()
         cursor.execute("CREATE DATABASE IF NOT EXISTS ann")
         cursor.execute("USE ann")
@@ -70,6 +72,7 @@ class MySQL(BaseANN):
         self._cursor = cursor
 
     def set_query_arguments(self, oversample, search_head_batch_size):
+        assert self._connection.autocommit
         self._oversample = oversample
         self._search_head_batch_size = search_head_batch_size
         self._cursor.execute("SET @@vectors_search_head_batch_size = %d" % search_head_batch_size)
