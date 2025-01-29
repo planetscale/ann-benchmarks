@@ -15,11 +15,7 @@ class MySQL(BaseANN):
         self._connection = None
         self._cursor = None
 
-        if metric == "angular":
-            self._query = "SELECT /*+ SET_VAR(vectors_search_head_batch_size=%s) */ id,DISTANCE(embedding,CAST(%s AS CHAR CHARACTER SET BINARY),'COSINE') AS d FROM items ORDER BY d LIMIT %s"
-        elif metric == "euclidean":
-            self._query = "SELECT /*+ SET_VAR(vectors_search_head_batch_size=%s) */ id,DISTANCE(embedding,CAST(%s AS CHAR CHARACTER SET BINARY),'L2') AS d FROM items ORDER BY d LIMIT %s"
-        else:
+        if metric != "angular" and metric != "euclidean":
             raise RuntimeError(f"unknown metric {metric}")
 
         if 'fq' in method_param:
@@ -80,11 +76,20 @@ class MySQL(BaseANN):
 
     def query(self, v, n):
         blob = struct.pack(f'{len(v)}f', *v)
+
+        if self._metric == "angular":
+            distfunc = 'COSINE'
+        elif self._metric == "euclidean":
+            distfunc = 'L2'
+        else:
+            raise RuntimeError(f"unknown metric {self._metric}")
+
         if self._oversample > 1:
-            stmt = f'SELECT * FROM ({self._query}) ttt ORDER BY d LIMIT %s;'
+            stmt = f"SELECT /*+ SET_VAR(vectors_search_head_batch_size=%s) */ id,DISTANCE(embedding,CAST(%s AS CHAR CHARACTER SET BINARY),'{distfunc}') AS d FROM items ORDER BY d LIMIT %s"
+            stmt = f'SELECT * FROM ({stmt}) ttt ORDER BY d LIMIT %s;'
             data = (self._search_head_batch_size, blob, int(n*self._oversample), n)
         else:
-            stmt = self._query
+            stmt = f"SELECT /*+ SET_VAR(vectors_search_head_batch_size=%s) */ id FROM items ORDER BY DISTANCE(embedding,CAST(%s AS CHAR CHARACTER SET BINARY),'{distfunc}') LIMIT %s"
             data = (self._search_head_batch_size, blob, n)
         self._cursor.execute(stmt, data)
         return [row[0] for row in self._cursor.fetchall()]
