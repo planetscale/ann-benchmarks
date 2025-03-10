@@ -86,7 +86,7 @@ USER root
 
 # Custom entrypoint that also starts the MySQL server.
 RUN echo 'set -eux' >> entrypoint.sh
-RUN echo 'su bob -c "nohup /src/build/runtime_output_directory/mysqld --with-ps-vectors --innodb-buffer-pool-size=8G > /tmp/nohup.out 2>&1 & sleep 5"' >> entrypoint.sh
+RUN echo 'su bob -c "nohup /src/build/runtime_output_directory/mysqld --with-ps-vectors --vectors-pool-size=4G --innodb-buffer-pool-size=4G > /tmp/nohup.out 2>&1 & sleep 5"' >> entrypoint.sh
 RUN echo 'python3 -u run_algorithm.py "$@"' >> entrypoint.sh
 
 ENTRYPOINT ["/bin/bash", "/home/app/entrypoint.sh"]
